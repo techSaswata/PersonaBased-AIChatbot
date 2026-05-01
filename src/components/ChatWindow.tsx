@@ -159,6 +159,7 @@ export function ChatWindow() {
   const [error, setError] = useState("");
   const messageListRef = useRef<HTMLDivElement | null>(null);
   const didInitialScrollRef = useRef(false);
+  const latestChatHistoriesRef = useRef<ChatHistories>(chatHistories);
 
   const activePersona = useMemo(
     () => personas.find((persona) => persona.id === activePersonaId) ?? personas[0],
@@ -180,16 +181,20 @@ export function ChatWindow() {
   }, []);
 
   useEffect(() => {
+    latestChatHistoriesRef.current = chatHistories;
+  }, [chatHistories]);
+
+  useEffect(() => {
     if (isRestoringChats) {
       return;
     }
 
     const saveInterval = window.setInterval(() => {
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistories));
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(latestChatHistoriesRef.current));
     }, 5000);
 
     return () => window.clearInterval(saveInterval);
-  }, [chatHistories, isRestoringChats]);
+  }, [isRestoringChats]);
 
   useEffect(() => {
     localStorage.setItem(ACTIVE_PERSONA_STORAGE_KEY, activePersonaId);
@@ -264,6 +269,7 @@ export function ChatWindow() {
     };
 
     setChatHistories(nextHistories);
+    latestChatHistoriesRef.current = nextHistories;
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(nextHistories));
     clearPersonaResponseCache(activePersonaId);
     setInput("");
