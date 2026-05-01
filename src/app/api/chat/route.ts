@@ -26,6 +26,8 @@ type PersonResearchTarget = {
   personName: string;
 };
 
+type LinkedInProfileItem = Record<string, unknown>;
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -41,6 +43,113 @@ function shouldResearchPerson(content: string) {
 
 function clipText(value: string, maxLength = 7000) {
   return value.length > maxLength ? `${value.slice(0, maxLength)}... [truncated]` : value;
+}
+
+function stringifyValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(stringifyValue).filter(Boolean).join(", ");
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !/(url|urn|id|tracking|picture|image|logo|badge)/i.test(key))
+      .map(([key, nestedValue]) => {
+        const serializedValue = stringifyValue(nestedValue);
+        return serializedValue ? `${key}: ${serializedValue}` : "";
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+
+  return String(value);
+}
+
+function formatLinkedInEntries(title: string, value: unknown): string {
+  if (!Array.isArray(value) || !value.length) {
+    return "";
+  }
+
+  const entries = value
+    .map((entry, index) => {
+      if (!entry || typeof entry !== "object") {
+        return "";
+      }
+
+      const fields = Object.entries(entry as Record<string, unknown>)
+        .filter(([key, fieldValue]) => {
+          if (fieldValue === null || fieldValue === undefined || fieldValue === "") {
+            return false;
+          }
+
+          return !/(url|urn|id|tracking|picture|image|logo|badge|entity|navigation|timestamp)/i.test(key);
+        })
+        .map(([key, fieldValue]) => `${key}: ${stringifyValue(fieldValue)}`)
+        .filter(Boolean);
+
+      return fields.length ? `${index + 1}. ${fields.join(" | ")}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  return entries ? `\n## ${title}\n${entries}` : "";
+}
+
+function formatLinkedInProfileContext(items: unknown): string {
+  const profiles = Array.isArray(items) ? items : [items];
+  const profile = profiles.find(
+    (item): item is LinkedInProfileItem => Boolean(item) && typeof item === "object" && !("error" in item)
+  );
+
+  if (!profile) {
+    return clipText(JSON.stringify(items, null, 2), 1200);
+  }
+
+  const summaryFields = [
+    ["Name", [profile.firstName, profile.lastName].filter(Boolean).join(" ")],
+    ["Headline", profile.headline],
+    ["Current company", profile.currentCompany || profile.companyName],
+    ["Job title", profile.jobTitle],
+    ["Location", [profile.geoLocationName, profile.geoCountryName].filter(Boolean).join(", ")],
+    ["Summary", profile.summary],
+    ["Follower count", profile.followerCount],
+    ["Connections count", profile.connectionsCount],
+    ["Public identifier", profile.publicIdentifier]
+  ]
+    .map(([label, value]) => {
+      const serializedValue = stringifyValue(value);
+      return serializedValue ? `- ${label}: ${serializedValue}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  const protectedSections = [
+    summaryFields ? `## Profile Summary\n${summaryFields}` : "",
+    formatLinkedInEntries("Experience / Positions", profile.positions || profile.experience),
+    formatLinkedInEntries("Education", profile.educations || profile.education)
+  ].filter(Boolean);
+  const optionalSections = [
+    formatLinkedInEntries("Skills", profile.skills),
+    formatLinkedInEntries("Certifications", profile.certifications),
+    formatLinkedInEntries("Projects", profile.projects),
+    formatLinkedInEntries("Publications", profile.publications),
+    formatLinkedInEntries("Courses", profile.courses),
+    formatLinkedInEntries("Honors", profile.honors),
+    formatLinkedInEntries("Organizations", profile.organizations),
+    formatLinkedInEntries("Volunteer Experience", profile.volunteerExperiences)
+  ].filter(Boolean);
+  const protectedContext = protectedSections.join("\n");
+  const optionalContext = optionalSections.join("\n");
+
+  return [
+    protectedContext,
+    optionalContext ? clipText(optionalContext, Math.max(4000, 18000 - protectedContext.length)) : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function getKnownLinkedInUrl(personName: string, fallbackPersonaId: keyof typeof LINKEDIN_PROFILE_URLS) {
@@ -247,7 +356,7 @@ async function fetchLinkedInProfileContext(profileUrl: string, personName: strin
     }
 
     const items = (await response.json()) as unknown;
-    const serializedItems = clipText(JSON.stringify(items, null, 2));
+    const serializedItems = formatLinkedInProfileContext(items);
 
     return `## Fresh LinkedIn Profile Context
 The following data was fetched server-side from Apify's LinkedIn Profile Scraper for ${personName}: ${profileUrl}. Use it to answer questions about work experience, education, skills, certifications, projects, volunteering, and profile summary. Do not mention API keys or scraping internals to the user. If this data conflicts with older embedded profile notes, prefer this fresh data.
@@ -282,6 +391,10 @@ async function fetchPersonResearchContext(
   return `## Person Research Instructions
 The user is asking about ${target.personName}. Use the fresh research context below if present. If no LinkedIn profile was found, use Google search context and say only what can be reasonably inferred.
 
+LinkedIn section-reading rule:
+- For questions about role, company, previous work, college, degree, or timeline, inspect the LinkedIn experience/positions and education sections carefully before saying the exact detail is missing.
+- If fresh LinkedIn context is unavailable or incomplete, still combine embedded profile facts, Google context, and confident public/background knowledge before saying the detail is not verified. Do not claim that you freshly opened LinkedIn unless fresh LinkedIn context is actually present.
+
 Disambiguation rules:
 - If any result or scraped profile connects the person to Scaler, Scaler School of Technology, SST, or InterviewBit, treat that as the intended person and do not mention unrelated same-name people.
 - For Scaler/SST/InterviewBit-associated people, answer naturally. If the user asks "do you know him/her?", start with "Yes, I know him/her..." and then give role/context. Do not end with "I don't know him/her personally."
@@ -290,6 +403,8 @@ Disambiguation rules:
 
 Human wording rules:
 - Do not expose source mechanics in the answer. Avoid phrases like "public posts say", "LinkedIn posts connect", "search results show", "available public context", "scraped profile", or "from the data".
+- Do not narrate answer limitations or policy. Avoid phrases like "I shouldn't add specific responsibilities beyond that", "unless explicitly listed", "I can only say", "the safe answer is", or "I don't have verified details" unless the user directly asks about source confidence.
+- If responsibilities or exact details are not available, answer the known role/title/timeline directly and stop. Mention "the exact responsibilities are not clear" only when the user specifically asks for responsibilities.
 - If the result is clear enough, say it directly: "Yes, I know Shruti. She is associated with Scaler/SST..."
 - If the exact title is not fully clear and the user did not ask for the exact title, do not mention that uncertainty; just answer with the known association/work area.
 - If the user asks specifically for an exact current title and it is unclear, say it briefly without over-explaining.
