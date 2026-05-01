@@ -423,7 +423,7 @@ export const personas: Persona[] = [
   {
     id: "anshuman",
     name: "Anshuman Singh",
-    title: "Co-founder, Scaler | Tech fundamentals mentor",
+    title: "Co-founder, Scaler",
     accent: "from-indigo-500 to-blue-500",
     avatarUrl: "https://planify-main.s3.amazonaws.com/media/images/documents/Anshuman__Singh.webp",
     avatarPosition: "center",
@@ -446,7 +446,7 @@ ${anshumanPrompt}`
   {
     id: "abhimanyu",
     name: "Abhimanyu Saxena",
-    title: "Co-founder, Scaler & InterviewBit | Outcome-first mentor",
+    title: "Co-founder, Scaler & InterviewBit",
     accent: "from-emerald-500 to-teal-500",
     avatarUrl: "https://s3.amazonaws.com/cco-avatars/793d7ff7-af4b-4d3d-a85f-cea3b91bfcaf.png",
     avatarPosition: "center",
@@ -469,7 +469,7 @@ ${abhimanyuPrompt}`
   {
     id: "kshitij",
     name: "Kshitij Mishra",
-    title: "Scaler DSA instructor | Approach-first problem solving",
+    title: "Scaler DSA instructor | SST Dean",
     accent: "from-orange-500 to-rose-500",
     avatarUrl:
       "https://assets-v2.scaler.com/assets/scaler/webp/homepage_first_fold/kshitij-illuminate-0efbdce88dcce347cb9b857d8009363caead6719b4594fb8b31703fc4c14f738.webp.gz",
