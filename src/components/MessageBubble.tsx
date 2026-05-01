@@ -172,7 +172,7 @@ function FormattedAssistantMessage({ content }: { content: string }) {
                   {segment.language}
                 </div>
               ) : null}
-              <pre className="overflow-x-auto p-3 text-xs leading-5 text-slate-100">
+              <pre className="max-w-full overflow-x-auto p-3 text-[11px] leading-5 text-slate-100 sm:text-xs">
                 <code>{segment.content}</code>
               </pre>
             </div>
@@ -198,7 +198,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <div className={`flex animate-float-in ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] rounded-3xl px-4 py-3 text-sm leading-6 shadow-2xl md:max-w-[72%] ${
+        className={`max-w-[92%] break-words rounded-3xl px-3 py-2.5 text-sm leading-6 shadow-2xl sm:px-4 sm:py-3 md:max-w-[72%] ${
           isUser
             ? "bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-indigo-950/40"
             : "border border-white/10 bg-white/[0.08] text-slate-100 shadow-black/30 backdrop-blur-xl"

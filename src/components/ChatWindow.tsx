@@ -422,20 +422,20 @@ export function ChatWindow() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">
-      <section className="glass-panel animate-float-in relative overflow-hidden rounded-[2rem] p-5 md:p-8">
+    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-4 px-3 py-4 sm:px-4 md:gap-6 md:px-8 md:py-6">
+      <section className="glass-panel animate-float-in relative overflow-hidden rounded-3xl p-4 md:rounded-[2rem] md:p-8">
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl" />
         <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-sky-500/10 blur-3xl" />
-        <p className="relative text-sm font-semibold uppercase tracking-[0.3em] text-indigo-200">
+        <p className="relative text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-200 sm:text-sm sm:tracking-[0.3em]">
           Persona-Based AI Chatbot
         </p>
         <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="relative">
-            <h1 className="max-w-full whitespace-nowrap text-3xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
+            <h1 className="max-w-full text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:whitespace-nowrap md:text-5xl lg:text-6xl">
               Talk to Scaler-inspired mentors
             </h1>
           </div>
-          <div className="animate-pulse-glow relative rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm text-slate-200 backdrop-blur-xl">
+          <div className="animate-pulse-glow relative w-fit rounded-2xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs text-slate-200 backdrop-blur-xl sm:px-4 sm:py-3 sm:text-sm">
             <span className="text-slate-400">Active:</span>{" "}
             <span className="font-semibold text-white">{activePersona.name}</span>
           </div>
@@ -448,13 +448,13 @@ export function ChatWindow() {
         onChange={switchPersona}
       />
 
-      <section className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[22rem_1fr]">
-        <aside className="glass-panel relative overflow-hidden rounded-[2rem] p-5">
+      <section className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[22rem_1fr] lg:gap-6">
+        <aside className="glass-panel order-2 relative overflow-hidden rounded-3xl p-4 lg:order-1 lg:rounded-[2rem] lg:p-5">
           <div className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-r ${activePersona.accent} opacity-20 blur-2xl`} />
           <div className={`relative h-2 rounded-full bg-gradient-to-r ${activePersona.accent}`} />
-          <div className="relative mt-5 flex items-center gap-4">
+          <div className="relative mt-4 flex items-center gap-3 sm:gap-4 lg:mt-5">
             <div
-              className={`relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[1.6rem] bg-gradient-to-br ${activePersona.accent} text-2xl font-bold text-white shadow-2xl shadow-black/40 ring-1 ring-white/15`}
+              className={`relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-3xl bg-gradient-to-br ${activePersona.accent} text-xl font-bold text-white shadow-2xl shadow-black/40 ring-1 ring-white/15 sm:h-20 sm:w-20 sm:rounded-[1.6rem] sm:text-2xl`}
             >
               <span>{activePersona.name.slice(0, 1)}</span>
               <Image
@@ -463,17 +463,17 @@ export function ChatWindow() {
                 fill
                 priority
                 unoptimized
-                sizes="80px"
-                className="rounded-[1.6rem] object-cover"
+                sizes="(max-width: 640px) 64px, 80px"
+                className="rounded-3xl object-cover sm:rounded-[1.6rem]"
                 style={{ objectPosition: activePersona.avatarPosition }}
                 onError={(event) => {
                   event.currentTarget.style.display = "none";
                 }}
               />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">{activePersona.name}</h2>
-              <p className="mt-1 text-sm leading-5 text-slate-400">{activePersona.title}</p>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-bold text-white sm:text-xl">{activePersona.name}</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-sm">{activePersona.title}</p>
             </div>
           </div>
           <p className="relative mt-4 text-sm leading-6 text-slate-300">
@@ -487,7 +487,7 @@ export function ChatWindow() {
           >
             Start New chat
           </button>
-          <div className="mt-6">
+          <div className="mt-5 lg:mt-6">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Quick starts
             </p>
@@ -499,10 +499,10 @@ export function ChatWindow() {
           </div>
         </aside>
 
-        <div className="glass-panel flex h-[34rem] min-h-0 flex-col rounded-[2rem] p-4">
+        <div className="glass-panel order-1 flex h-[64svh] min-h-[24rem] max-h-[42rem] flex-col rounded-3xl p-3 sm:h-[34rem] sm:p-4 lg:order-2 lg:rounded-[2rem]">
           <div
             ref={messageListRef}
-            className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1 [scrollbar-color:rgba(148,163,184,0.35)_transparent]"
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 [scrollbar-color:rgba(148,163,184,0.35)_transparent] sm:space-y-4"
           >
             {isRestoringChats ? (
               <div className="grid h-full place-items-center">
@@ -530,18 +530,18 @@ export function ChatWindow() {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:gap-3">
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder={`Ask ${activePersona.name}...`}
               disabled={isRestoringChats}
-              className="min-h-12 flex-1 rounded-2xl border border-white/10 bg-black/35 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/50 focus:ring-4 focus:ring-indigo-500/15"
+              className="min-h-11 flex-1 rounded-2xl border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/50 focus:ring-4 focus:ring-indigo-500/15 sm:min-h-12 sm:px-4"
             />
             <button
               type="submit"
               disabled={isChatBusy || !input.trim()}
-              className="min-h-12 rounded-2xl bg-gradient-to-r from-indigo-500 to-sky-500 px-6 text-sm font-semibold text-white shadow-2xl shadow-indigo-950/40 transition duration-300 hover:-translate-y-0.5 hover:from-indigo-400 hover:to-sky-400 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+              className="min-h-11 rounded-2xl bg-gradient-to-r from-indigo-500 to-sky-500 px-6 text-sm font-semibold text-white shadow-2xl shadow-indigo-950/40 transition duration-300 hover:-translate-y-0.5 hover:from-indigo-400 hover:to-sky-400 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60 sm:min-h-12"
             >
               Send
             </button>
